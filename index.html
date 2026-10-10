@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Narang Textile – Delivery Slip Generator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <h1 class="brand">NARANG<span>TEXTILE</span></h1>
+    <nav>
+      <button class="nav active" data-view="dashboard">Dashboard</button>
+      <button class="nav" data-view="create">Create Delivery Slip</button>
+      <button class="nav" data-view="history">Order History</button>
+      <button class="nav" data-view="customers">Saved Customers</button>
+      <button class="nav" data-view="settings">Settings</button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view active">
+      <h2>Dashboard</h2>
+      <div class="stats" id="stats"></div>
+      <div class="card">
+        <h3>Recent Slips</h3>
+        <div id="recent"></div>
+        <button class="btn primary" data-go="create">+ New Delivery Slip</button>
+        <button class="btn" data-go="history">View History</button>
+      </div>
+      <p class="note">Data is saved with <b>localStorage</b> in this browser on this device only. It is not cloud storage – clearing browser data deletes it. Use "Export CSV" regularly for backups.</p>
+    </section>
+
+    <!-- CREATE -->
+    <section id="view-create" class="view">
+      <h2>Create Delivery Slip</h2>
+      <div class="create-grid">
+        <form id="slipForm" class="card formcard" novalidate>
+          <h3>Customer</h3>
+          <div class="grid2">
+            <label>Full name *<input id="cName" autocomplete="off"></label>
+            <label>Mobile *<input id="cMobile" inputmode="numeric" maxlength="10" placeholder="10 digits"></label>
+          </div>
+          <label>House no. / Street *<input id="cStreet"></label>
+          <label>Area / Locality<input id="cArea"></label>
+          <div class="grid3">
+            <label>City *<input id="cCity"></label>
+            <label>State *<input id="cState"></label>
+            <label>PIN code *<input id="cPin" inputmode="numeric" maxlength="6"></label>
+          </div>
+          <label class="check"><input type="checkbox" id="saveCust" checked> Save customer for repeat orders</label>
+
+          <h3>Parcel</h3>
+          <div class="grid3">
+            <label>Order number<input id="orderNo" readonly></label>
+            <label>Order date<input id="orderDate" type="date"></label>
+            <label>Parcel ref (optional)<input id="parcelRef"></label>
+          </div>
+          <div id="products"></div>
+          <button type="button" class="btn" id="addRow">+ Add Product</button>
+          <p class="total">Total pieces: <b id="totalPieces">0</b></p>
+
+          <h3>Courier (optional)</h3>
+          <div class="grid2">
+            <label>Courier company<input id="courier"></label>
+            <label>AWB / Tracking no.<input id="awb"></label>
+          </div>
+
+          <div id="errors" class="msg error" hidden></div>
+          <div class="actions">
+            <button type="button" class="btn primary" id="btnGenerate">Generate Slip</button>
+            <button type="button" class="btn" id="btnSave">Save Order</button>
+            <button type="button" class="btn primary" id="btnPrint">Print Slip</button>
+            <button type="button" class="btn" id="btnPdf">Save as PDF</button>
+            <button type="button" class="btn" id="btnClear">Clear Form</button>
+            <button type="button" class="btn" data-go="history">View History</button>
+          </div>
+          <div class="note">
+            <b>Printing at 4 × 6 in:</b> In the print dialog choose your thermal printer, set <b>Paper size</b> to 4 × 6 in (or "4x6" / 101.6 × 152.4 mm), <b>Margins: None</b>, <b>Scale: 100%</b> (not "Fit to page"), and turn <b>Headers and footers</b> off. For PDF, choose <b>Save as PDF</b> as the destination.
+          </div>
+        </form>
+
+        <div class="preview-col">
+          <h3 class="preview-head">Live Preview (4 × 6 in)</h3>
+          <div id="label" class="label"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="view-history" class="view">
+      <h2>Order History</h2>
+      <div class="card">
+        <div class="bar">
+          <input id="search" type="search" placeholder="Search order no, name, mobile, PIN">
+          <button class="btn" id="btnCsv">Export CSV</button>
+        </div>
+        <div class="tablewrap"><table id="histTable"><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>PIN</th><th>Pcs</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section id="view-customers" class="view">
+      <h2>Saved Customers</h2>
+      <div class="card"><div class="tablewrap"><table id="custTable"><thead><tr><th>Name</th><th>Mobile</th><th>City</th><th>PIN</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view">
+      <h2>Settings</h2>
+      <form id="settingsForm" class="card" novalidate>
+        <h3>Sender Details</h3>
+        <label>Company name<input id="sName"></label>
+        <label>Sender address<textarea id="sAddr" rows="3"></textarea></label>
+        <label>Sender mobile<input id="sMobile" inputmode="numeric" maxlength="10"></label>
+        <label>Company logo (optional)<input id="sLogo" type="file" accept="image/*"></label>
+        <img id="logoPrev" alt="" hidden>
+        <div class="actions">
+          <button type="submit" class="btn primary">Save Settings</button>
+          <button type="button" class="btn" id="btnLogoRemove">Remove Logo</button>
+        </div>
+        <div id="settingsMsg" class="msg ok" hidden></div>
+      </form>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
